@@ -18,6 +18,7 @@ Usage:
   python3 scripts/validate.py [--date YYYY-MM-DD]
 """
 import argparse
+import hashlib
 import importlib.util
 import re
 import sys
@@ -133,15 +134,29 @@ def main():
     check("no credential/secret patterns", not creds,
           f"{creds}" if creds else "clean")
 
-    # --- Traceability ---
-    import hashlib
-    for label, inp, carrier in (
-            ("research inputs", REPO_ROOT / "data/research/sample-inputs.json", texts["research"]),
-            ("candidate inputs", REPO_ROOT / "data/candidates/sample-inputs.json",
-             queue.get("inputs_sha256", "") + texts["recruitment"])):
+    # --- Traceability: the inputs file named in each report must exist and
+    # its sha256 must match the hash recorded in that report (works for
+    # sample fixtures and dated operator-curated inputs alike).
+    for label, carrier in (("research", texts["research"]),
+                           ("recruitment", texts["recruitment"] + queue.get("inputs_sha256", ""))):
+        m = re.search(r"inputs:\s*(\S+)\s*\(sha256:\s*([0-9a-f]+)\)", carrier)
+        if not m:
+            check(f"{label} inputs traceable", False, "no inputs+hash header found")
+            continue
+        inp = REPO_ROOT / m.group(1) if not Path(m.group(1)).is_absolute() \
+            else Path(m.group(1))
+        # stored paths may be absolute (same machine) or repo-relative
+        try:
+            rel = inp.relative_to(REPO_ROOT) if inp.is_absolute() else inp
+            inp = REPO_ROOT / rel
+        except ValueError:
+            pass
+        if not inp.exists():
+            check(f"{label} inputs traceable", False, f"missing {m.group(1)}")
+            continue
         h = hashlib.sha256(inp.read_bytes()).hexdigest()
-        check(f"{label} hash traceable", h in carrier or h[:12] in carrier,
-              h[:12])
+        check(f"{label} inputs traceable",
+              h == m.group(2) or h[:12] in carrier, h[:12])
 
     fails = [r for r in RESULTS if not r[1]]
     print(f"\n{len(RESULTS) - len(fails)}/{len(RESULTS)} checks passed.")

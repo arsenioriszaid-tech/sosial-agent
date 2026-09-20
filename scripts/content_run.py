@@ -69,21 +69,30 @@ def decide(item, allowed_topics):
 
 def build_draft(item):
     """Template draft in builder/learner voice. Reports others' experience,
-    never invents firsthand experience. Returns (draft_text, fields)."""
+    never invents firsthand experience. The angle (the hook/question) is
+    kept intact; only the context summary is trimmed to fit.
+    Returns (draft_text, fields)."""
     angle = item["possible_angle"].strip()
-    # Keep the post body short, specific, and hedged; detail lives in fields.
-    core = (f"Noted: {item['factual_summary'].strip()} "
-            f"Open question: {angle}")
-    if len(core) > DRAFT_CHAR_LIMIT:
-        core = core[: DRAFT_CHAR_LIMIT - 1] + "…"
+    summary = item["factual_summary"].strip()
+    sep = " -- Konteks: "
+    if len(angle) > 200:
+        angle = angle[:199] + "…"
+    head = DRAFT_CHAR_LIMIT - len(angle) - len(sep)
+    if len(summary) > head:
+        summary = summary[:head - 1] + "…" if head > 1 else ""
+    core = f"{angle}{sep}{summary}" if summary else angle
+    conf = item.get("confidence", "low")
+    unc = (f"Confidence: {conf}. "
+           + ("Low confidence — vendor claim/rough estimate, treat as unverified. "
+              if conf == "low" else
+              "Single-source report; may not generalize. ")
+           + "No firsthand verification claimed.")
     fields = {
         "premise": item["why_it_matters"].strip(),
         "evidence_basis": f"{item['source']} — {item['factual_summary'].strip()}",
-        "why_worth_posting": ("Concrete, copyable practice with an open question; "
+        "why_worth_posting": ("Concrete, specific development with an open question; "
                               "invites practitioner replies, not hype."),
-        "uncertainty_risks": ("Single reported case (confidence: "
-                              f"{item.get('confidence', 'low')}); may not generalize. "
-                              "No firsthand verification claimed."),
+        "uncertainty_risks": unc,
         "pillar": "technical_observations",
     }
     return core, fields
