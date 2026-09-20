@@ -1,0 +1,20 @@
+target:
+  - developers_using_coding_agents
+  - agentic_software_builders
+  - developer_tooling_engineers
+  - agent_security_or_permissions
+
+preferred_signals:
+  - OpenCode
+  - Claude Code
+  - Codex
+  - Cursor
+  - coding-agent usage
+  - agent permissions
+  - sandboxing
+  - tool access
+  - agent security
+  - agent reliability
+
+evidence_required: true
+automatic_contact: false
