@@ -1,7 +1,7 @@
 # V0 Workflow
 
-## Content
-Research → rank by substance/relevance → identify reaction opportunities → draft → human review → human-approved external action → record outcome.
+## Content (V0.1)
+Research → verified facts + context → analysis → core observation → canonical draft → human review → platform adaptation → human-approved external action → record outcome.
 
 ## Recruitment
 Discover → collect public evidence → qualify → candidate queue → human review → human conversation → bounded Exousia test → record outcome.

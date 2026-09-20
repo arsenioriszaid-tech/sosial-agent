@@ -1,0 +1,13 @@
+# Canonical draft contract (V0.1). Budgets apply ONLY to platform
+# adaptation notes, never to the canonical draft itself.
+canonical:
+  target_min_chars: 400
+  target_max_chars: 800
+  paragraphs: "1-3"
+
+platform_budgets:
+  x: 280
+  facebook: 2000
+
+note: canonical drafts have no hard limit; a platform note of NEEDS_REVIEW
+  means a human adapts the draft, never that the engine truncates it.
