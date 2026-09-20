@@ -1,0 +1,77 @@
+{
+  "run_id": "recruit-2026-09-20-6688acc8",
+  "inputs_sha256": "6688acc8d0502ff3ee0265bca569a5eb5fdcd1a8aa24923211dfd2a8a5a7f3d4",
+  "candidates": [
+    {
+      "handle": "devA",
+      "platform": "x",
+      "profile_url": "https://example.com/devA",
+      "relevance": "exousia-tester-candidate",
+      "evidence": [
+        "Uses Claude Code daily on a monorepo",
+        "Wrote about scoping file-write permissions per directory for agents",
+        "Discussed sandboxing tool access for autonomous runs"
+      ],
+      "matched_signals": [
+        "Claude Code",
+        "sandboxing",
+        "tool access"
+      ],
+      "likely_agent_user": true,
+      "reason": "observable coding-agent use plus Exousia-relevant signal",
+      "confidence": "high",
+      "missing_info": "direct confirmation of testing availability (human step)",
+      "status": "QUALIFIED",
+      "reviewed_by_human": false
+    },
+    {
+      "handle": "devB",
+      "platform": "x",
+      "profile_url": "https://example.com/devB",
+      "relevance": "possible-candidate",
+      "evidence": [
+        "Uses Cursor for refactoring work"
+      ],
+      "matched_signals": [
+        "Cursor"
+      ],
+      "likely_agent_user": true,
+      "reason": "partial signal match; human must judge relevance",
+      "confidence": "low",
+      "missing_info": "stronger evidence of agent use or permissions/sandboxing work",
+      "status": "NEEDS_REVIEW",
+      "reviewed_by_human": false
+    },
+    {
+      "handle": "devC",
+      "platform": "x",
+      "profile_url": "https://example.com/devC",
+      "relevance": "not-relevant",
+      "evidence": [
+        "Posts about AI news and LLM benchmarks",
+        "Self-describes as interested in AI"
+      ],
+      "matched_signals": [],
+      "likely_agent_user": false,
+      "reason": "generic AI interest only; no preferred signal matched",
+      "confidence": "medium",
+      "missing_info": "observable coding-agent use or agent-security work",
+      "status": "IRRELEVANT",
+      "reviewed_by_human": false
+    },
+    {
+      "handle": "devD",
+      "platform": "x",
+      "profile_url": "https://example.com/devD",
+      "relevance": "not-relevant",
+      "evidence": [],
+      "matched_signals": [],
+      "likely_agent_user": false,
+      "reason": "no observable evidence supplied",
+      "confidence": "high",
+      "missing_info": "any public evidence of coding-agent or agentic work",
+      "status": "IRRELEVANT",
+      "reviewed_by_human": false
+    }
+  ]
+}
