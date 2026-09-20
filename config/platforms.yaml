@@ -1,0 +1,8 @@
+platforms:
+  - name: x
+    v0_mode: research_and_draft_only
+  - name: facebook
+    v0_mode: research_and_draft_only
+
+external_actions:
+  require_human_approval: true
