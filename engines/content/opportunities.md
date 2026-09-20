@@ -1,3 +1,3 @@
-# Opportunities
+# Opportunities (V0.1)
 
-A worthwhile opportunity gives the user something specific, useful, or firsthand to contribute. Virality alone is not sufficient.
+A worthwhile opportunity yields a specific core observation with enough context to survive as a complete thought. Virality, controversy, or hook-potential alone is never sufficient; bait without substance is SKIPped.

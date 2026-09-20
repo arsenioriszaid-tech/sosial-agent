@@ -36,10 +36,10 @@ def _load_common():
 
 common = _load_common()
 (REPO_ROOT, CREDENTIAL_PATTERNS, FORBIDDEN_ACTION_PATTERNS,
- CANDIDATE_STATES_V0, POST_HUMAN_STATES, load_json) = (
+ CANDIDATE_STATES_V0, POST_HUMAN_STATES, load_json, load_yaml) = (
     common.REPO_ROOT, common.CREDENTIAL_PATTERNS,
     common.FORBIDDEN_ACTION_PATTERNS, common.CANDIDATE_STATES_V0,
-    common.POST_HUMAN_STATES, common.load_json)
+    common.POST_HUMAN_STATES, common.load_json, common.load_yaml)
 
 RESULTS = []
 
@@ -54,7 +54,8 @@ def warn(name, detail=""):
     print(f"[WARN] {name} — {detail}")
 
 
-REQUIRED_DRAFT_FIELDS = ("premise:", "evidence_basis:", "uncertainty_risks:")
+REQUIRED_DRAFT_FIELDS = ("premise:", "evidence_basis:", "uncertainty_risks:",
+                           "core_observation:", "interpretation:", "platform_notes:")
 REQUIRED_CANDIDATE_FIELDS = ("handle", "platform", "profile_url", "relevance",
                              "evidence", "matched_signals", "likely_agent_user",
                              "reason", "confidence", "status", "reviewed_by_human")
@@ -81,7 +82,9 @@ def main():
     queue = load_json(queue_p) if queue_p.exists() else {"candidates": []}
     queue_text = queue_p.read_text(encoding="utf-8") if queue_p.exists() else ""
 
-    # --- Draft structure ---
+    # --- Draft structure (V0.1 canonical contract: no hard length limit,
+    # facts/interpretation labeled, platform adaptation as notes only) ---
+    bodies = []
     if texts["drafts"]:
         for field in REQUIRED_DRAFT_FIELDS:
             check(f"drafts contain {field}", field in texts["drafts"])
@@ -90,11 +93,35 @@ def main():
         check("human-review boundary marked",
               "PENDING_HUMAN_REVIEW" in texts["drafts"])
         bodies = re.findall(r"```\n(.*?)```", texts["drafts"], re.S)
-        long = [b for b in bodies if len(b.strip()) > 280]
-        if long:
-            warn("draft length", f"{len(long)} draft(s) exceed 280 chars")
+        check("facts/analysis/take labeled",
+              "Facts:" in texts["drafts"] and "Analysis:" in texts["drafts"]
+              and "Take:" in texts["drafts"])
+        try:
+            _canon = load_yaml(REPO_ROOT / "config/canonical.yaml")
+            cmin = int(_canon.get("canonical", {}).get("target_min_chars", 400))
+            cmax = int(_canon.get("canonical", {}).get("target_max_chars", 800))
+            x_budget = int(_canon.get("platform_budgets", {}).get("x", 280))
+        except (OSError, ValueError):
+            cmin, cmax, x_budget = 400, 800, 280
+        off = [b for b in bodies if not (cmin <= len(b.strip()) <= cmax)]
+        if off:
+            warn("canonical length",
+                 f"{len(off)} draft(s) outside {cmin}-{cmax} target (valid; human judges)")
         else:
-            check("drafts within 280 chars", True, f"{len(bodies)} draft(s)")
+            check("canonical drafts in target range", True,
+                  f"{len(bodies)} draft(s), no hard limit")
+        sections = re.split(r"(?m)^## Draft \d+", texts["drafts"])
+        adapt_ok = bool(bodies) and len(sections) > 1
+        for sec, body in zip(sections[1:], bodies):
+            if len(body.strip()) > x_budget and "NEEDS_REVIEW" not in sec:
+                adapt_ok = False
+            if "platform_notes:" not in sec:
+                adapt_ok = False
+        check("platform adaptation noted, never truncated", adapt_ok,
+              f"{len(bodies)} draft(s)")
+        check("no brutal mid-sentence cut in canonical bodies",
+              not any(b.strip().endswith("…") for b in bodies),
+              "canonical has no hard limit")
         exousia = [b for b in bodies if "exousia" in b.lower()]
         check("no forced Exousia CTA in drafts", not exousia,
               f"{len(exousia)} violation(s)" if exousia else "separation holds")
@@ -137,6 +164,7 @@ def main():
     # --- Traceability: the inputs file named in each report must exist and
     # its sha256 must match the hash recorded in that report (works for
     # sample fixtures and dated operator-curated inputs alike).
+    research_inputs_text = ""
     for label, carrier in (("research", texts["research"]),
                            ("recruitment", texts["recruitment"] + queue.get("inputs_sha256", ""))):
         m = re.search(r"inputs:\s*(\S+)\s*\(sha256:\s*([0-9a-f]+)\)", carrier)
@@ -157,6 +185,16 @@ def main():
         h = hashlib.sha256(inp.read_bytes()).hexdigest()
         check(f"{label} inputs traceable",
               h == m.group(2) or h[:12] in carrier, h[:12])
+        if label == "research":
+            research_inputs_text = inp.read_text(encoding="utf-8")
+
+    # --- No injected questions: the template adds no hook/'?'. Every '?'
+    # in a canonical body must already exist in the operator inputs.
+    if bodies and research_inputs_text:
+        q_body = sum(b.count("?") for b in bodies)
+        q_in = research_inputs_text.count("?")
+        check("no injected questions", q_body <= q_in,
+              f"{q_body} '?' in drafts vs {q_in} in inputs (template adds none)")
 
     fails = [r for r in RESULTS if not r[1]]
     print(f"\n{len(RESULTS) - len(fails)}/{len(RESULTS)} checks passed.")

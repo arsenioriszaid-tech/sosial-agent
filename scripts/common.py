@@ -25,6 +25,16 @@ HYPE_PATTERNS = [
     "will change everything", "revolutionary", "game-changer", "game changer",
     "mind-blowing", "mindblowing", "10x", "100x", "the future is here",
     "you won't believe", "secret trick", "viral",
+    "akan mengubah segalanya", "mengubah segalanya",
+]
+# Engagement/controversy-bait markers. Heuristic only: they trigger SKIP
+# solely when combined with thin substance (depth != analysis), never alone.
+BAIT_PATTERNS = [
+    "everyone is wrong", "unpopular opinion", "hot take",
+    "nobody is talking about", "nobody talks about",
+    "you're doing it wrong", "stop doing", "will shock you",
+    "semua orang salah", "pendapat kontroversial",
+    "tidak ada yang membicarakan",
 ]
 
 CANDIDATE_STATES_V0 = {"DISCOVERED", "QUALIFIED", "NEEDS_REVIEW", "IRRELEVANT"}

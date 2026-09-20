@@ -1,3 +1,5 @@
-# Research
+# Research (V0.1)
 
-Collect evidence → remove generic/hype topics → identify concrete angles → rank opportunities → allow SKIP.
+Collect verified facts + context → assess claim trust and depth → identify core observation → rank by substance → allow SKIP.
+
+SKIP headline-only, thin-context, or unverified-claim items. Separate facts from interpretation at the source.
